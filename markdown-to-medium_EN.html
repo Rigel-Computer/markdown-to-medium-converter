@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown zu Medium.com Konverter</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        
+    
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    textarea, .preview {
+        flex: 1;
+        height: 65vh;
+        min-height: 300px;
+        max-height: 65vh;
+        min-height: 400px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background: white;
+        resize: none;
+    }
+
+    .preview {
+        overflow-y: auto;
+    }
+
+    .pane {
+        width: 50%;
+        max-width: 50%;
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+    }
+    
+
+    .controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .hint {
+        font-size: 14px;
+        color: #444;
+        max-width: 600px;
+    }
+
+    .centered {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+        textarea, .preview { width: 100%; height: 600px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; background: white; }
+        .preview { overflow-y: auto; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; background: #03a87c; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="centered">
+<h1>Markdown → Medium.com HTML Converter</h1>
+    <p>Enter Markdown on the left. On the right, you see the preview. Click the button to copy the HTML code to the clipboard.</p>
+    <div class="container">
+        <div class="pane"><textarea id="markdown-input"></textarea></div>
+        <div class="pane"><div id="preview" class="preview"><em>Preview will appear here...</em></div></div>
+    </div>
+    
+    <div class="controls">
+        <button id="copy-btn">📋 Copy Medium HTML (Chrome / Edge only)</button>
+        <div class="hint">⚠️ If you're using Firefox or another browser, please manually select the text in the right window and press CTRL+C to copy.</div>
+    </div>
+    
+    </div>
+<script>
+        function markdownToMediumHTML(markdown) {
+            let html = markdown;
+            // Entferne Leerzeilen nach Markdown-Überschriften (#, ##, ###)
+            markdown = markdown.replace(/^(#{1,3} .+)\n\s*\n/gm, '$1\n');
+
+
+            html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
+                return `<pre><code>${code.trim()}</code></pre>`;
+            });
+
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            html = html.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+            html = html.replace(/^### (.*$)/gim, '<h4>$1</h4>');
+            html = html.replace(/^## (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^# (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+            html = html.replace(/^---$/gm, '<hr />');
+
+            html = html.replace(/((?:^\d+\. .+\n?)+)/gm, match => {
+                const items = match.trim().split('\n').map(line =>
+                    `<li>${line.replace(/^\d+\. /, '')}</li>`).join('');
+                return `<ol>${items}</ol>`;
+            });
+
+            html = html.replace(/((?:^[-*+] .+\n?)+)/gm, match => {
+                const items = match.trim().split('\n').map(line =>
+                    `<li>${line.replace(/^[-*+] /, '')}</li>`).join('');
+                return `<ul>${items}</ul>`;
+            });
+
+            html = html.split(/\n{2,}/).map(paragraph => {
+                paragraph = paragraph.trim();
+                if (paragraph.match(/^<(h[2-4]|ul|ol|li|blockquote|pre|code|hr|div)/)) {
+                    return paragraph;
+                }
+                return `<p>${paragraph}</p>`;
+            }).join('');
+
+            html = html.replace(/<p>(.*?)\n(.*?)<\/p>/g, '<p>$1<br>$2</p>');
+
+            html = html.replace(/(<\/(h2|h3|h4|blockquote|pre|hr)>)<br\s*\/?>/g, '$1');
+
+            
+            // Entferne <br> direkt nach h2/h3/h4 oder andere Blockelemente
+            html = html.replace(/(<\/(h2|h3|h4)>)<br\s*\/?>/g, '$1');
+
+            // Entferne leere <p> nach h2/h3/h4 (z. B. durch doppelte Absätze)
+            html = html.replace(/(<\/(h2|h3|h4)>)(\s*)<p><\/p>/g, '$1');
+
+            
+            // Entferne <br> direkt nach h2/h3/h4
+            html = html.replace(/(<\/(h2|h3|h4)>)<br\s*\/?>/g, '$1');
+
+            // Entferne leere <p> nach h2/h3/h4
+            html = html.replace(/(<\/(h2|h3|h4)>)(\s*)<p><\/p>/g, '$1');
+
+            
+            // Entferne <br> in leeren Überschriften
+            html = html.replace(/<h([2-4])><br\s*\/?><\/h\1>/g, '');
+
+            // Entferne ganz leere <h2>-<h4>
+            html = html.replace(/<h([2-4])>\s*<\/h\1>/g, '');
+
+            
+            // Entferne <h2|h3|h4> mit nur <br> darin (auch mit Leerzeichen)
+            html = html.replace(/<h([2-4])>\s*<br\s*\/?>(\s*)<\/h\1>/g, '');
+
+            return html;
+        }
+
+        const markdownInput = document.getElementById('markdown-input');
+        const preview = document.getElementById('preview');
+        const copyBtn = document.getElementById('copy-btn');
+
+        function updatePreview() {
+            const markdown = markdownInput.value;
+            const html = markdownToMediumHTML(markdown);
+            preview.innerHTML = html || '<em>Preview will appear here...</em>';
+        }
+
+        markdownInput.addEventListener('input', updatePreview);
+
+        copyBtn.addEventListener('click', async () => {
+            const htmlElement = document.getElementById("preview");
+            const range = document.createRange();
+            range.selectNodeContents(htmlElement);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand("copy");
+                alert("✅ Vorschau erfolgreich kopiert.");
+            } catch (err) {
+                alert("❌ Kopieren fehlgeschlagen.");
+            }
+            selection.removeAllRanges();
+        });
+
+        markdownInput.value = `# Example Heading
+
+This is **bold text** and *italic text*.
+
+## Subheading
+
+- Item 1
+- Item 2
+
+> Quote
+
+\`\`\`js
+console.log("Hallo Welt");
+\`\`\`
+
+[OpenAI](https://openai.com)
+
+---
+
+1. Numbered
+2. This too
+`;
+
+        updatePreview();
+    </script>
+</body>
+</html>
