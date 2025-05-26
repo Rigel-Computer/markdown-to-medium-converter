@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown zu Medium.com Konverter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #03a87c;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .converter {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #03a87c;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .panel-content {
+            padding: 20px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        textarea {
+            flex: 1;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: #03a87c;
+        }
+
+        .preview {
+            flex: 1;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+            background: #fafafa;
+            font-family: Georgia, serif;
+            line-height: 1.8;
+        }
+
+        .preview h2, .preview h3, .preview h4 {
+            color: #292929;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+        }
+
+        .preview h2 { font-size: 1.8rem; }
+        .preview h3 { font-size: 1.4rem; }
+        .preview h4 { font-size: 1.2rem; }
+
+        .preview p {
+            margin: 16px 0;
+            color: #292929;
+        }
+
+        .preview blockquote {
+            border-left: 4px solid #03a87c;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #666;
+        }
+
+        .preview ul, .preview ol {
+            margin: 16px 0;
+            padding-left: 30px;
+        }
+
+        .preview li {
+            margin: 8px 0;
+        }
+
+        .preview code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+        }
+
+        .preview pre {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .preview pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .preview a {
+            color: #03a87c;
+            text-decoration: underline;
+        }
+
+        .preview .separator {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 1.5rem;
+            color: #ccc;
+        }
+
+        .preview .ac.cb.ob.oc.od.oe {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .preview .of.bx.bm.fa.og.oh, .preview .of.bx.bm.fa.og {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #ccc;
+            border-radius: 50%;
+            margin: 0 4px;
+        }
+
+        .preview strong {
+            font-weight: 600;
+        }
+
+        .preview em {
+            font-style: italic;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .copy-btn {
+            background: #03a87c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(3, 168, 124, 0.3);
+        }
+
+        .copy-btn:hover {
+            background: #028a67;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(3, 168, 124, 0.4);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            opacity: 1;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .converter {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Markdown → Medium.com</h1>
+            <p>Konvertiere Markdown-Text in Medium-kompatibles HTML zum direkten Einfügen</p>
+        </div>
+
+        <div class="converter">
+            <div class="panel">
+                <div class="panel-header">
+                    📝 Markdown Input
+                </div>
+                <div class="panel-content">
+                    <textarea id="markdown-input" placeholder="Hier deinen Markdown-Text eingeben...
+
+Beispiel:
+# Hauptüberschrift
+
+Dies ist ein **fettgedruckter** Text und dies ist *kursiv*.
+
+## Unterüberschrift
+
+- Listenpunkt 1
+- Listenpunkt 2
+- Listenpunkt 3
+
+> Dies ist ein Zitat
+
+```javascript
+console.log('Hello World');
+```
+
+[Link zu Google](https://google.com)"></textarea>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    🎯 Medium-Vorschau
+                </div>
+                <div class="panel-content">
+                    <div id="preview" class="preview">
+                        <p style="color: #999; text-align: center; font-style: italic;">
+                            Gib Markdown-Text links ein, um die Vorschau zu sehen...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="copy-btn" class="copy-btn">📋 Fensterinhalt rechts kopieren</button>
+            <div id="status" class="status"></div>
+        </div>
+    </div>
+
+    <script>
+        // Markdown zu HTML Konverter (vereinfacht für Medium)
+        function markdownToMediumHTML(markdown) {
+            let html = markdown;
+
+            // Überschriften
+            html = html.replace(/^### (.*$)/gim, '<h4>$1</h4>');
+            html = html.replace(/^## (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^# (.*$)/gim, '<h2>$1</h2>');
+
+            // Code-Blöcke (müssen vor inline code verarbeitet werden)
+            html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+
+            // Inline Code
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Fettdruck und Kursiv
+            html = html.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong class="markup--strong markup--li-strong"><em>$1</em></strong>');
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="markup--strong markup--li-strong">$1</strong>');
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+            // Links
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+            // Zitate
+            html = html.replace(/^> (.+)/gm, '<blockquote>$1</blockquote>');
+
+            // Separator (--- wird zu Medium-Separator)
+            html = html.replace(/^---$/gm, 'AAAAAAAAAAAAAAA');
+
+            // Listen
+            html = html.replace(/^[\s]*[-*+] (.+)/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+            // Nummerierte Listen
+            html = html.replace(/^[\s]*\d+\. (.+)/gm, '<li>$1</li>');
+            
+            // Absätze
+            html = html.split('\n\n').map(paragraph => {
+                paragraph = paragraph.trim();
+                if (paragraph === '') return '';
+                
+                // Keine <p> Tags für bereits getaggte Inhalte
+                if (paragraph.match(/^<(h2|h3|h4|ul|ol|li|blockquote|pre|code|div)/)) {
+                    return paragraph;
+                }
+                
+                return `<p>${paragraph}</p>`;
+            }).filter(p => p !== '').join('');
+
+            // Zeilenumbrüche in Absätzen (nur innerhalb von p-Tags)
+            html = html.replace(/<p>([^<]*)\n([^<]*)<\/p>/g, '<p>$1<br>$2</p>');
+            
+            // Entferne überflüssige Leerzeilen zwischen HTML-Elementen
+            html = html.replace(/>\s*\n\s*</g, '><');
+
+            return html;
+        }
+
+        // Live-Aktualisierung der Vorschau
+        const markdownInput = document.getElementById('markdown-input');
+        const preview = document.getElementById('preview');
+        const copyBtn = document.getElementById('copy-btn');
+        const status = document.getElementById('status');
+
+        function updatePreview() {
+            const markdown = markdownInput.value;
+            if (markdown.trim() === '') {
+                preview.innerHTML = '<p style="color: #999; text-align: center; font-style: italic;">Gib Markdown-Text links ein, um die Vorschau zu sehen...</p>';
+                return;
+            }
+            
+            const html = markdownToMediumHTML(markdown);
+            preview.innerHTML = html;
+        }
+
+        markdownInput.addEventListener('input', updatePreview);
+
+        // Kopieren-Funktion
+        copyBtn.addEventListener('click', async function() {
+            const markdown = markdownInput.value;
+            if (markdown.trim() === '') {
+                showStatus('Bitte zuerst Markdown-Text eingeben!', 'error');
+                return;
+            }
+
+            try {
+                // Erstelle einen temporären Range für die Selektion
+                const range = document.createRange();
+                const selection = window.getSelection();
+                
+                // Markiere den Inhalt des Preview-Elements
+                range.selectNodeContents(preview);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                
+                // Kopiere die Selektion (formatierter Inhalt)
+                const successful = document.execCommand('copy');
+                
+                // Entferne die Selektion
+                selection.removeAllRanges();
+                
+                if (successful) {
+                    showStatus('✅ Text rechtes Fenster wurde in die Zwischenablage kopiert!', 'success');
+                } else {
+                    throw new Error('Copy command failed');
+                }
+            } catch (err) {
+                // Fallback: HTML-Text kopieren
+                try {
+                    const html = markdownToMediumHTML(markdown);
+                    await navigator.clipboard.writeText(html);
+                    showStatus('✅ Text rechtes Fenster wurde in die Zwischenablage kopiert! (HTML-Fallback)', 'success');
+                } catch (fallbackErr) {
+                    showStatus('❌ Kopieren fehlgeschlagen. Bitte manuell markieren und kopieren.', 'error');
+                }
+            }
+        });
+
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+            
+            setTimeout(() => {
+                status.style.opacity = '0';
+                setTimeout(() => {
+                    status.className = 'status';
+                }, 300);
+            }, 3000);
+        }
+
+        // Beispiel-Text setzen
+        markdownInput.value = `# Willkommen bei Medium!
+
+Dies ist ein **Beispiel-Artikel** mit verschiedenen *Markdown-Elementen*.
+
+---
+
+## Was funktioniert:
+
+- **Fettdruck** und *Kursivschrift*
+- [Links zu externen Seiten](https://medium.com)
+- Code-Snippets wie \`console.log('Hello')\`
+
+### Code-Blöcke:
+
+\`\`\`javascript
+function greet(name) {
+    return \`Hello, \${name}!\`;
+}
+\`\`\`
+
+> "Die beste Zeit, einen Baum zu pflanzen, war vor 20 Jahren. Die zweitbeste Zeit ist jetzt." - Chinesisches Sprichwort
+
+---
+
+## Probier es aus!
+
+Ändere diesen Text links und sieh dir rechts die Vorschau an. Dann kopiere das HTML und füge es bei Medium ein!`;
+
+        // Initiale Vorschau laden
+        updatePreview();
+    </script>
+</body>
+</html>
