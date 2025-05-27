@@ -6,8 +6,8 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 🗣 **Language availability:**
 
--  🇩🇪 German UI version: `markdown-to-medium-final-layout-fullscreen-corrected.html`
--  🇬🇧 English UI version: `markdown-to-medium-final-layout-EN.html`
+-  🇩🇪 German UI version: `markdown-to-medium_DE.html`
+-  🇬🇧 English UI version: `markdown-to-medium_EN.html`
 
 ...
 
@@ -41,11 +41,12 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 ## 📁 Files
 
-| File                                                        | Description                      |
-| ----------------------------------------------------------- | -------------------------------- |
-| `markdown-to-medium-final-layout-fullscreen-corrected.html` | German version, optimized layout |
-| `markdown-to-medium-final-layout-EN.html`                   | English version (UI only)        |
-| `README.md`                                                 | This file                        |
+| File                              | Description                      |
+| --------------------------------- | -------------------------------- |
+| `markdown-to-medium_DE.html`      | German version, optimized layout |
+| `markdown-to-medium_EN.html.html` | English version (UI only)        |
+| `README.md`                       | This file                        |
+| `LICENSE`                         | MIT-Licence                      |
 
 ---
 
