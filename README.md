@@ -41,12 +41,12 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 ## 📁 Files
 
-| File                              | Description                      |
-| --------------------------------- | -------------------------------- |
-| `markdown-to-medium_DE.html`      | German version, optimized layout |
-| `markdown-to-medium_EN.html.html` | English version (UI only)        |
-| `README.md`                       | This file                        |
-| `LICENSE`                         | MIT-Licence                      |
+| File                         | Description                      |
+| ---------------------------- | -------------------------------- |
+| `markdown-to-medium_DE.html` | German version, optimized layout |
+| `markdown-to-medium_EN.html` | English version (UI only)        |
+| `README.md`                  | This file                        |
+| `LICENSE`                    | MIT-Licence                      |
 
 ---
 
