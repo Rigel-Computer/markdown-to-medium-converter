@@ -124,7 +124,6 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 | File                         | Description                    |
 | ---------------------------- | ------------------------------ |
-| `markdown-to-medium_DE.html` | German version, full featured  |
 | `markdown-to-medium_EN.html` | English version, full featured |
 | `README.md`                  | This documentation             |
 | `LICENSE`                    | MIT License                    |
