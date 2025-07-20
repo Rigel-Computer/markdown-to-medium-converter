@@ -6,8 +6,8 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 🗣 **Language availability:**
 
--  🇩🇪 German UI version: `markdown-to-medium_DE.html`
 -  🇬🇧 English UI version: `markdown-to-medium_EN.html`
+   (German version is deprecated just because of saving time to maintenance)
 
 ---
 

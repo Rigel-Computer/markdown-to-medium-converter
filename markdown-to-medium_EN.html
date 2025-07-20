@@ -1,3 +1,4 @@
+<!-- 19.07.2025 21:41 | macOS-spezifische Anzeige umgesetzt -->
 <!DOCTYPE html>
 <html lang="en">
    <head>
@@ -90,6 +91,14 @@
       </style>
    </head>
    <body>
+
+   <script>
+      document.body.classList.add(navigator.platform.toUpperCase().indexOf("MAC") >= 0 ? "mac" : "non-mac");
+      const isMac = document.body.classList.contains("mac");
+      document.querySelectorAll(".only-mac").forEach(el => el.style.display = isMac ? "block" : "none");
+      document.querySelectorAll(".only-non-mac").forEach(el => el.style.display = isMac ? "none" : "flex");
+   </script>
+
       <div class="centered">
          <h1>Markdown → Medium.com HTML</h1>
          <p>
@@ -105,15 +114,20 @@
             </div>
          </div>
 
-         <div class="controls">
-            <button id="copy-btn">
-               📋 Copy Medium HTML (Chrome / Edge only)
-            </button>
-            <div class="hint">
-               ⚠️ If using Firefox or other browsers, please manually select the
-               text in the right window and copy with CTRL+C.
-            </div>
-         </div>
+         
+<div class="controls">
+   <div class="only-non-mac">
+      <button id="copy-btn">📋 Copy Medium HTML (Chrome / Edge only)</button>
+      <div id="debug-msg" style="font-size: 13px; color: #666; margin-top: 10px"></div>
+      <div class="hint">
+         ⚠️ If using Firefox or other browsers, please manually select the text in the right window and copy with CTRL+C.
+      </div>
+   </div>
+   <div class="only-mac hint" style="display:none;">
+      Just select the content on the right and paste it into Medium.
+   </div>
+</div>
+</div>
       </div>
       <script>
          function markdownToMediumHTML(markdown) {
@@ -253,18 +267,39 @@
 
          copyBtn.addEventListener("click", async () => {
             const htmlElement = document.getElementById("preview");
-            const range = document.createRange();
-            range.selectNodeContents(htmlElement);
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-            try {
-               document.execCommand("copy");
-               alert("✅ Preview successfully copied.");
-            } catch (err) {
-               alert("❌ Copy failed.");
+            const debugEl = document.getElementById("debug-msg");
+
+            const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+
+            if (debugEl) {
+               debugEl.textContent = isMac
+                  ? "macOS detected – using clipboard API."
+                  : "Non-macOS – using execCommand().";
             }
-            selection.removeAllRanges();
+
+            if (isMac && navigator.clipboard?.writeText) {
+               // macOS: clipboard API
+               try {
+                  await navigator.clipboard.writeText(htmlElement.innerHTML);
+                  alert("✅ Preview successfully copied (macOS).");
+               } catch (err) {
+                  alert("❌ Copy failed (macOS): " + err);
+               }
+            } else {
+               // Fallback für Windows/Linux
+               const range = document.createRange();
+               range.selectNodeContents(htmlElement);
+               const selection = window.getSelection();
+               selection.removeAllRanges();
+               selection.addRange(range);
+               try {
+                  document.execCommand("copy");
+                  alert("✅ Preview successfully copied.");
+               } catch (err) {
+                  alert("❌ Copy failed.");
+               }
+               selection.removeAllRanges();
+            }
          });
 
          markdownInput.value = `# Example Heading
@@ -309,3 +344,5 @@ services:
       </script>
    </body>
 </html>
+
+<!-- 19.07.2025 21:41 | macOS-spezifische Anzeige umgesetzt -->
