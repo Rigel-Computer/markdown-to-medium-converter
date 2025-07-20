@@ -1,4 +1,4 @@
-<!-- 19.07.2025 21:41 | macOS-spezifische Anzeige umgesetzt -->
+<!-- 20.07.2025 21:18 | Button nur für macOS entfernt, Hinweis ergänzt -->
 <!DOCTYPE html>
 <html lang="en">
    <head>
@@ -88,16 +88,22 @@
             border-radius: 6px;
             cursor: pointer;
          }
-      </style>
+      
+         .mac .only-non-mac { display: none !important; }
+         .non-mac .only-mac { display: none !important; }
+
+</style>
    </head>
    <body>
 
    <script>
-      document.body.classList.add(navigator.platform.toUpperCase().indexOf("MAC") >= 0 ? "mac" : "non-mac");
-      const isMac = document.body.classList.contains("mac");
-      document.querySelectorAll(".only-mac").forEach(el => el.style.display = isMac ? "block" : "none");
-      document.querySelectorAll(".only-non-mac").forEach(el => el.style.display = isMac ? "none" : "flex");
+      document.documentElement.classList.add(
+         navigator.platform.toUpperCase().indexOf("MAC") >= 0 ? "mac" : "non-mac"
+      );
    </script>
+
+
+   
 
       <div class="centered">
          <h1>Markdown → Medium.com HTML</h1>
@@ -115,6 +121,7 @@
          </div>
 
          
+
 <div class="controls">
    <div class="only-non-mac">
       <button id="copy-btn">📋 Copy Medium HTML (Chrome / Edge only)</button>
@@ -123,6 +130,12 @@
          ⚠️ If using Firefox or other browsers, please manually select the text in the right window and copy with CTRL+C.
       </div>
    </div>
+   <div class="only-mac hint">
+      Just select the content in the right preview panel and copy it with CMD+C – then paste it into Medium.
+   </div>
+</div>
+
+</div>
    <div class="only-mac hint" style="display:none;">
       Just select the content on the right and paste it into Medium.
    </div>
@@ -345,4 +358,4 @@ services:
    </body>
 </html>
 
-<!-- 19.07.2025 21:41 | macOS-spezifische Anzeige umgesetzt -->
+<!-- 20.07.2025 21:18 | Button nur für macOS entfernt, Hinweis ergänzt -->
