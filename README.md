@@ -6,7 +6,7 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 🗣 **Language availability:**
 
--  🇬🇧 English UI version: `markdown-to-medium_EN.html`
+-  🇬🇧 English UI version: `index.html`
    (German version is deprecated just because of saving time to maintenance)
 
 ---
@@ -122,11 +122,12 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 ## 📁 Files
 
-| File                         | Description                    |
-| ---------------------------- | ------------------------------ |
-| `markdown-to-medium_EN.html` | English version, full featured |
-| `README.md`                  | This documentation             |
-| `LICENSE`                    | MIT License                    |
+| File         | Description                    |
+| ------------ | ------------------------------ |
+| `index.html` | English version, full featured |
+| `README.md`  | This documentation             |
+| `LICENSE`    | MIT License                    |
+| `CLAUDE.md`  | Claude Code guidance           |
 
 ---
 
@@ -134,7 +135,7 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 **For Everyone:**
 
-1. Download and open the HTML file in your browser
+1. Download and open `index.html` in your browser
 2. Enter or paste your Markdown on the left
 3. See the live HTML preview on the right
 4. Click the green button to copy the HTML (Chrome/Edge)

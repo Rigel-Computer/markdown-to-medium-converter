@@ -1,12 +1,8 @@
-Arbeitsdaten/
+# Alte Dateien und Entwicklungsversionen
+alte-dateien/
+
+# Claude temporäre Dateien
+claude-home/
+
+# Editor-Konfiguration
 .vscode/
-1.html
-1.md
-2.html
-3.html
-dir.bat
-markdown-to-medium_EN.html
-neuer Text von funxt.html
-Verzeichnisinhalt.txt
-markdown-to-medium_EN-Vor-Finalem-Commit.html
-markdown_to_medium_fixed_3_claude_funxt_scheinbar.html

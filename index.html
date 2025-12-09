@@ -1,0 +1,606 @@
+<!-- saved from url=(0022)http://internet.e-mail -->
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Markdown to Medium.com Converter</title>
+      <link rel="icon" type="image/x-icon" href="markdown_to_medium_converter_icon_V_1.ico" />
+
+      <style>
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+         }
+
+         body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+               "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+               "Helvetica Neue", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+            line-height: 1.6;
+         }
+
+         .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+         }
+
+         .header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+         }
+
+         .header p {
+            font-size: 1.2rem;
+            color: #4a5568;
+            font-weight: 300;
+            max-width: 800px;
+         }
+
+         .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            height: calc(100vh - 200px);
+         }
+
+         .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+               0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+         }
+
+         .pane-header {
+            padding: 1.5rem 1.5rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+         }
+
+         .pane-header h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+         }
+
+         .pane-header .icon {
+            font-size: 1.2rem;
+         }
+
+         textarea,
+         .preview {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 1.5rem;
+            font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
+               "Source Code Pro", "Menlo", "Consolas", monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            background: transparent;
+            color: #2d3748;
+         }
+
+         textarea {
+            background: rgba(248, 250, 252, 0.8);
+         }
+
+         textarea::placeholder {
+            color: #a0aec0;
+            font-style: italic;
+         }
+
+         .preview {
+            overflow-y: auto;
+            background: white;
+         }
+
+         .preview::-webkit-scrollbar {
+            width: 8px;
+         }
+
+         .preview::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+         }
+
+         .preview::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+         }
+
+         .preview::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+         }
+
+         .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            padding: 0 2rem;
+            flex-wrap: wrap;
+         }
+
+         button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+               "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+         }
+
+         button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+         }
+
+         button:active {
+            transform: translateY(0);
+         }
+
+         .hint {
+            font-size: 0.95rem;
+            color: #718096;
+            max-width: 600px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+         }
+
+         .mac .only-non-mac {
+            display: none !important;
+         }
+         .non-mac .only-mac {
+            display: none !important;
+         }
+
+         /* Responsive Design */
+         @media (max-width: 1024px) {
+            .container {
+               flex-direction: column;
+               height: auto;
+            }
+
+            .pane {
+               min-height: 400px;
+            }
+
+            .header h1 {
+               font-size: 2rem;
+            }
+
+            .header p {
+               font-size: 1.1rem;
+            }
+         }
+
+         @media (max-width: 768px) {
+            .header {
+               padding: 1rem;
+            }
+
+            .container {
+               padding: 0 1rem;
+            }
+
+            .controls {
+               padding: 0 1rem;
+            }
+         }
+
+         /* Preview Styling */
+         .preview p:empty {
+            display: none;
+            margin: 0;
+            padding: 0;
+         }
+         .preview h2,
+         .preview h3,
+         .preview h4 {
+            color: #2d3748;
+            margin: 1.5rem 0 1rem;
+            font-weight: 600;
+         }
+
+         .preview h2 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+         }
+
+         .preview h3 {
+            font-size: 1.4rem;
+         }
+
+         .preview h4 {
+            font-size: 1.2rem;
+         }
+
+         .preview p {
+            margin: 1rem 0;
+            color: #4a5568;
+         }
+
+         .preview code {
+            background: #f7fafc;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.9em;
+            color: #e53e3e;
+         }
+
+         .preview pre {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+         }
+
+         .preview pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+         }
+
+         .preview blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: #718096;
+            font-style: italic;
+         }
+
+         .preview ul,
+         .preview ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+         }
+
+         .preview li {
+            margin: 0.5rem 0;
+         }
+
+         .preview a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+         }
+
+         .preview a:hover {
+            text-decoration: underline;
+         }
+
+         .preview hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 2rem 0;
+            border-radius: 1px;
+         }
+      </style>
+   </head>
+   <body>
+      <script>
+         document.documentElement.classList.add(
+            navigator.platform.toUpperCase().indexOf("MAC") >= 0
+               ? "mac"
+               : "non-mac"
+         );
+      </script>
+
+      <div class="header">
+         <h1>Markdown → Medium.com HTML</h1>
+         <p>
+            Enter Markdown on the left. See the preview on the right. Click the
+            button to copy the HTML code to your clipboard.
+         </p>
+      </div>
+
+      <div class="container">
+         <div class="pane">
+            <div class="pane-header">
+               <h3><span class="icon">✏️</span> Markdown Input</h3>
+            </div>
+            <textarea id="markdown-input"></textarea>
+         </div>
+
+         <div class="pane">
+            <div class="pane-header">
+               <h3><span class="icon">👁️</span> Preview</h3>
+            </div>
+            <div id="preview" class="preview">
+               <em>Preview will appear here...</em>
+            </div>
+         </div>
+      </div>
+
+      <div class="controls">
+         <div class="only-non-mac">
+            <button id="copy-btn">
+               📋 Copy Medium HTML (Chrome / Edge only)
+            </button>
+            <div
+               id="debug-msg"
+               style="font-size: 13px; color: #666; margin-top: 10px"
+            ></div>
+            <div class="hint">
+               ⚠️ If using Firefox or other browsers, please manually select the
+               text in the right window and copy with CTRL+C.
+            </div>
+         </div>
+         <div class="only-mac hint">
+            Just select the content in the right preview panel and copy it with
+            CMD+C – then paste it into Medium.
+         </div>
+      </div>
+
+      <script>
+         function markdownToMediumHTML(markdown) {
+            let html = markdown;
+
+            // Leere Zeilen nach Überschriften entfernen (Markdown-Ebene)
+            html = html.replace(/^(#{1,3} .+)\n\s*\n/gm, "$1\n");
+
+            // STEP 1: Placeholder für leere Codezeilen
+            html = html.replace(
+               /```(\w*)\n([\s\S]*?)```/g,
+               (match, lang, code) => {
+                  const codeWithPlaceholder = code.replace(
+                     /\n\s*\n/g,
+                     "\nAAAAAAAAAAAAAAAAAAAAAA\n"
+                  );
+                  return `\`\`\`${lang || ""}\n${codeWithPlaceholder}\`\`\``;
+               }
+            );
+
+            // STEP 1.5: Platzhalter für # am Zeilenanfang
+            html = html.replace(
+               /```(\w*)\n([\s\S]*?)```/g,
+               (match, lang, code) => {
+                  const codeWithHashPlaceholder = code.replace(
+                     /^#/gm,
+                     "HASH_PLACEHOLDER"
+                  );
+                  return `\`\`\`${
+                     lang || ""
+                  }\n${codeWithHashPlaceholder}\`\`\``;
+               }
+            );
+
+            // STEP 1.6: Platzhalter für Listenzeichen
+            html = html.replace(
+               /```(\w*)\n([\s\S]*?)```/g,
+               (match, lang, code) => {
+                  const codeWithListPlaceholder = code.replace(
+                     /^-/gm,
+                     "LIST_SYMBOL_PLACEHOLDER"
+                  );
+                  return `\`\`\`${
+                     lang || ""
+                  }\n${codeWithListPlaceholder}\`\`\``;
+               }
+            );
+
+            // STEP 2: Codeblöcke ersetzen
+            html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+               return `<pre><code>${code}</code></pre>`;
+            });
+
+            // STEP 3: Formatierungen
+            html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+            html = html.replace(
+               /\*\*\*([^*]+)\*\*\*/g,
+               "<strong><em>$1</em></strong>"
+            );
+            html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+            html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+
+            html = html.replace(/^### (.*$)/gim, "<h4>$1</h4>");
+            html = html.replace(/^## (.*$)/gim, "<h3>$1</h3>");
+            html = html.replace(/^# (.*$)/gim, "<h2>$1</h2>");
+            html = html.replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>");
+            html = html.replace(
+               /\[([^\]]+)\]\(([^)]+)\)/g,
+               '<a href="$2">$1</a>'
+            );
+            html = html.replace(/^---$/gm, "<hr />");
+
+            html = html.replace(/((?:^\d+\. .+\n?)+)/gm, (match) => {
+               const items = match
+                  .trim()
+                  .split("\n")
+                  .map((line) => `<li>${line.replace(/^\d+\. /, "")}</li>`)
+                  .join("");
+               return `<ol>${items}</ol>`;
+            });
+
+            html = html.replace(/((?:^[-*+] .+\n?)+)/gm, (match) => {
+               const items = match
+                  .trim()
+                  .split("\n")
+                  .map((line) => `<li>${line.replace(/^[-*+] /, "")}</li>`)
+                  .join("");
+               return `<ul>${items}</ul>`;
+            });
+
+            html = html
+               .split(/\n{2,}/)
+               .map((paragraph) => {
+                  paragraph = paragraph.trim();
+                  if (
+                     paragraph.match(
+                        /^<(h[2-4]|ul|ol|li|blockquote|pre|code|hr|div)/
+                     )
+                  ) {
+                     return paragraph;
+                  }
+                  return `<p>${paragraph}</p>`;
+               })
+               .join("");
+
+            // Zusätzliche Leerzeilen nach Überschriften beseitigen
+            html = html.replace(/<p>\s*<\/p>/g, "");
+            html = html.replace(/(<h[2-4]>.*?<\/h[2-4]>)<p><\/p>/g, "$1");
+            html = html.replace(/(<\/(h2|h3|h4)>)(<br\s*\/?>)?/g, "$1");
+
+            // Platzhalter zurückwandeln
+            html = html.replace(/AAAAAAAAAAAAAAAAAAAAAA/g, " ");
+            html = html.replace(/HASH_PLACEHOLDER/g, "#");
+            html = html.replace(/LIST_SYMBOL_PLACEHOLDER/g, "-");
+
+            return html;
+         }
+
+         const markdownInput = document.getElementById("markdown-input");
+         const preview = document.getElementById("preview");
+         const copyBtn = document.getElementById("copy-btn");
+
+         function updatePreview() {
+            const markdown = markdownInput.value;
+            const html = markdownToMediumHTML(markdown);
+            preview.innerHTML = html || "<em>Preview will appear here...</em>";
+         }
+
+         markdownInput.addEventListener("input", updatePreview);
+
+         copyBtn.addEventListener("click", async () => {
+            const htmlElement = document.getElementById("preview");
+            const debugEl = document.getElementById("debug-msg");
+
+            const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+
+            if (debugEl) {
+               debugEl.textContent = isMac
+                  ? "macOS detected – using clipboard API."
+                  : "Non-macOS – using execCommand().";
+            }
+
+            if (isMac && navigator.clipboard?.writeText) {
+               // macOS: clipboard API
+               try {
+                  let rawHTML = htmlElement.innerHTML;
+                  let fixedHTML = rawHTML
+                     .replace(/<\/code><\/pre><br\s*\/?/g, "</code></pre>")
+                     .replace(/<\/code><\/pre>\s*<p><\/p>/g, "</code></pre>")
+                     .replace(/<pre><code>\s*<\/code><\/pre>/g, "")
+                     // NEU: Entferne <br> Tags nach Überschriften (Mac-spezifisches Problem)
+                     .replace(/(<\/h[2-4]>)\s*<br\s*\/?>\s*/gi, "$1")
+                     // NEU: Entferne Whitespace zwischen Tags
+                     .replace(/>\s+</g, "><");
+                  await navigator.clipboard.writeText(fixedHTML);
+                  alert("✅ Preview successfully copied (macOS).");
+               } catch (err) {
+                  alert("❌ Copy failed (macOS): " + err);
+               }
+            } else {
+               // Fallback für Windows/Linux
+               const range = document.createRange();
+               range.selectNodeContents(htmlElement);
+               const selection = window.getSelection();
+               selection.removeAllRanges();
+               selection.addRange(range);
+               try {
+                  document.execCommand("copy");
+                  alert("✅ Preview successfully copied.");
+               } catch (err) {
+                  alert("❌ Copy failed.");
+               }
+               selection.removeAllRanges();
+            }
+         });
+
+         markdownInput.value = `# Example Heading
+
+This is **bold text** and *italic text*.
+
+## Subheading
+
+- Point 1
+- Point 2
+
+> Quote
+
+\`\`\`yaml
+version: "3.5"
+services:
+   etcd:
+      image: quay.io/coreos/etcd:v3.5.5
+      # The brain - keeps everything coordinated
+   
+   minio:
+      image: minio/minio:latest
+      # The muscle - stores your vectors
+
+   milvus:
+      image: milvus:latest
+      depends_on:
+         - etcd
+         - minio
+      # The star - handles your queries
+\`\`\`
+
+[OpenAI](https://openai.com)
+
+---
+
+1. Numbered
+2. Also this
+`;
+
+         updatePreview();
+      </script>
+
+      <div style="display: flex; justify-content: center; margin: 2rem 0; padding: 0 2rem;">
+         <div class="hint">
+            Built with AI-augmented development by Rigel-Computer -
+            Software & Design<br />
+            Need a custom solution? →
+            <a href="https://www.rigel-computer.com/kontakt" style="color: #667eea; text-decoration: none; font-weight: 500;">Get in touch</a>
+            |
+            <a href="https://www.linkedin.com/in/christoph-schweres" style="color: #667eea; text-decoration: none; font-weight: 500;">LinkedIn</a>
+         </div>
+      </div>
+      <br /><br /><br />&nbsp;
+      <hr />
+   </body>
+</html>
