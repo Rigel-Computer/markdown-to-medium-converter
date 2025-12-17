@@ -74,9 +74,12 @@
          }
 
          .pane-header {
-            padding: 1.5rem 1.5rem 1rem;
+            padding: 1rem 1.5rem;
             border-bottom: 1px solid #e2e8f0;
             background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
          }
 
          .pane-header h3 {
@@ -86,6 +89,33 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin: 0;
+         }
+
+         .header-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-weight: 500;
+         }
+
+         .header-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.5);
+         }
+
+         .header-btn:active {
+            transform: translateY(0);
          }
 
          .pane-header .icon {
@@ -347,6 +377,9 @@
          <div class="pane">
             <div class="pane-header">
                <h3><span class="icon">👁️</span> Preview</h3>
+               <button id="header-copy-btn" class="header-btn" title="Copy HTML to Clipboard">
+                  <span>📋</span> Copy Medium HTML
+               </button>
             </div>
             <div id="preview" class="preview">
                <em>Preview will appear here...</em>
@@ -355,27 +388,32 @@
       </div>
 
       <div class="controls">
-         <div class="only-non-mac">
-            <button id="copy-btn">
-               📋 Copy Medium HTML (Chrome / Edge only)
+         <div>
+            <button id="copy-btn" title="Copy HTML to Clipboard">
+               📋 Copy Medium HTML
             </button>
             <div
                id="debug-msg"
                style="font-size: 13px; color: #666; margin-top: 10px"
             ></div>
-            <div class="hint">
-               ⚠️ If using Firefox or other browsers, please manually select the
-               text in the right window and copy with CTRL+C.
+            <div class="hint" style="margin-top: 1rem;">
+               ⚠️ If the button doesn't work, please manually select the
+               text in the right window and copy with CTRL+C / CMD+C.
             </div>
-         </div>
-         <div class="only-mac hint">
-            Just select the content in the right preview panel and copy it with
-            CMD+C – then paste it into Medium.
          </div>
       </div>
 
       <script>
          function markdownToMediumHTML(markdown) {
+            const escapeHtml = (unsafe) => {
+               return unsafe
+                  .replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+            };
+
             let html = markdown;
 
             // Leere Zeilen nach Überschriften entfernen (Markdown-Ebene)
@@ -423,11 +461,11 @@
 
             // STEP 2: Codeblöcke ersetzen
             html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-               return `<pre><code>${code}</code></pre>`;
+               return `<pre><code>${escapeHtml(code)}</code></pre>`;
             });
 
             // STEP 3: Formatierungen
-            html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+            html = html.replace(/`([^`]+)`/g, (match, code) => `<code>${escapeHtml(code)}</code>`);
             html = html.replace(
                /\*\*\*([^*]+)\*\*\*/g,
                "<strong><em>$1</em></strong>"
@@ -494,62 +532,80 @@
          const markdownInput = document.getElementById("markdown-input");
          const preview = document.getElementById("preview");
          const copyBtn = document.getElementById("copy-btn");
+         const headerCopyBtn = document.getElementById("header-copy-btn");
 
          function updatePreview() {
             const markdown = markdownInput.value;
+            sessionStorage.setItem("markdownInput", markdown);
             const html = markdownToMediumHTML(markdown);
             preview.innerHTML = html || "<em>Preview will appear here...</em>";
          }
 
          markdownInput.addEventListener("input", updatePreview);
 
-         copyBtn.addEventListener("click", async () => {
+         async function handleCopy() {
             const htmlElement = document.getElementById("preview");
             const debugEl = document.getElementById("debug-msg");
 
-            const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+            // Clean up HTML string
+            let rawHTML = htmlElement.innerHTML;
+            let fixedHTML = rawHTML
+               .replace(/<\/code><\/pre><br\s*\/?/g, "</code></pre>")
+               .replace(/<\/code><\/pre>\s*<p><\/p>/g, "</code></pre>")
+               .replace(/<pre><code>\s*<\/code><\/pre>/g, "")
+               // NEU: Entferne <br> Tags nach Überschriften (Mac-spezifisches Problem)
+               .replace(/(<\/h[2-4]>)\s*<br\s*\/?>\s*/gi, "$1")
+               // NEU: Entferne Whitespace zwischen Tags
+               .replace(/>\s+</g, "><");
 
             if (debugEl) {
-               debugEl.textContent = isMac
-                  ? "macOS detected – using clipboard API."
-                  : "Non-macOS – using execCommand().";
+               debugEl.textContent = "Copying rich text...";
             }
 
-            if (isMac && navigator.clipboard?.writeText) {
-               // macOS: clipboard API
-               try {
-                  let rawHTML = htmlElement.innerHTML;
-                  let fixedHTML = rawHTML
-                     .replace(/<\/code><\/pre><br\s*\/?/g, "</code></pre>")
-                     .replace(/<\/code><\/pre>\s*<p><\/p>/g, "</code></pre>")
-                     .replace(/<pre><code>\s*<\/code><\/pre>/g, "")
-                     // NEU: Entferne <br> Tags nach Überschriften (Mac-spezifisches Problem)
-                     .replace(/(<\/h[2-4]>)\s*<br\s*\/?>\s*/gi, "$1")
-                     // NEU: Entferne Whitespace zwischen Tags
-                     .replace(/>\s+</g, "><");
-                  await navigator.clipboard.writeText(fixedHTML);
-                  alert("✅ Preview successfully copied (macOS).");
-               } catch (err) {
-                  alert("❌ Copy failed (macOS): " + err);
-               }
-            } else {
-               // Fallback für Windows/Linux
-               const range = document.createRange();
-               range.selectNodeContents(htmlElement);
-               const selection = window.getSelection();
-               selection.removeAllRanges();
-               selection.addRange(range);
-               try {
-                  document.execCommand("copy");
+            try {
+               // Try modern Clipboard API with rich text
+               if (navigator.clipboard && navigator.clipboard.write) {
+                  const textBlob = new Blob([htmlElement.innerText], {
+                     type: "text/plain",
+                  });
+                  const htmlBlob = new Blob([fixedHTML], { type: "text/html" });
+
+                  await navigator.clipboard.write([
+                     new ClipboardItem({
+                        "text/plain": textBlob,
+                        "text/html": htmlBlob,
+                     }),
+                  ]);
                   alert("✅ Preview successfully copied.");
-               } catch (err) {
-                  alert("❌ Copy failed.");
+                  return;
                }
-               selection.removeAllRanges();
+            } catch (err) {
+               console.warn("Clipboard API failed, trying fallback...", err);
             }
-         });
 
-         markdownInput.value = `# Example Heading
+            // Fallback: Select and copy
+            const range = document.createRange();
+            range.selectNodeContents(htmlElement);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+               document.execCommand("copy");
+               alert("✅ Preview successfully copied (Fallback).");
+            } catch (err) {
+               alert("❌ Copy failed.");
+            }
+            selection.removeAllRanges();
+         }
+
+         copyBtn.addEventListener("click", handleCopy);
+         headerCopyBtn.addEventListener("click", handleCopy);
+
+         const savedMarkdown = sessionStorage.getItem("markdownInput");
+         if (savedMarkdown !== null) {
+            markdownInput.value = savedMarkdown;
+         } else {
+            markdownInput.value = `# Example Heading
 
 This is **bold text** and *italic text*.
 
@@ -566,7 +622,7 @@ services:
    etcd:
       image: quay.io/coreos/etcd:v3.5.5
       # The brain - keeps everything coordinated
-   
+
    minio:
       image: minio/minio:latest
       # The muscle - stores your vectors
@@ -586,6 +642,7 @@ services:
 1. Numbered
 2. Also this
 `;
+         }
 
          updatePreview();
       </script>
