@@ -135,7 +135,9 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 **For Everyone:**
 
-1. Download and open `index.html` in your browser
+1. **Direct Use:**
+   -  Download `index.html` from this repository and open it in your browser, or
+   -  [Use it directly via GitHub Pages](https://rigel-computer.github.io/markdown-to-medium-converter/)
 2. Enter or paste your Markdown on the left
 3. See the live HTML preview on the right
 4. Click the green button to copy the HTML (Chrome/Edge)
