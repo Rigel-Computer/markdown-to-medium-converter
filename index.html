@@ -32,15 +32,16 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 1.5rem 2rem;
-            margin-bottom: 2rem;
+            padding: 0.25rem 1rem 0.75rem 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
          }
 
          .header h1 {
-            font-size: 2.5rem;
+            font-size: 2.48rem;
             font-weight: 600;
             color: #1a202c;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
             background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -52,6 +53,7 @@
             color: #4a5568;
             font-weight: 300;
             max-width: 800px;
+            margin: 0 auto;
          }
 
          .container {
@@ -181,6 +183,12 @@
             margin: 2rem 0;
             padding: 0 2rem;
             flex-wrap: wrap;
+         }
+
+         .controls > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
          }
 
          button {
@@ -381,13 +389,6 @@
          <div class="pane">
             <div class="pane-header">
                <h3><span class="icon">👁️</span> Preview</h3>
-               <button
-                  id="header-copy-btn"
-                  class="header-btn"
-                  title="Copy HTML to Clipboard"
-               >
-                  <span>📋</span> Copy Medium HTML
-               </button>
             </div>
             <div id="preview" class="preview">
                <em>Preview will appear here...</em>
@@ -484,6 +485,16 @@
             html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
             html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
 
+            // STEP 3.5: Platzhalter für ##### und #### (VOR den anderen Überschriften)
+            html = html.replace(
+               /^##### (.*$)/gim,
+               "HEADING5_BOLD_PLACEHOLDER_$1_ENDPLACEHOLDER"
+            );
+            html = html.replace(
+               /^#### (.*$)/gim,
+               "HEADING4_BOLD_PLACEHOLDER_$1_ENDPLACEHOLDER"
+            );
+
             html = html.replace(/^### (.*$)/gim, "<h4>$1</h4>");
             html = html.replace(/^## (.*$)/gim, "<h3>$1</h3>");
             html = html.replace(/^# (.*$)/gim, "<h2>$1</h2>");
@@ -518,7 +529,7 @@
                   paragraph = paragraph.trim();
                   if (
                      paragraph.match(
-                        /^<(h[2-4]|ul|ol|li|blockquote|pre|code|hr|div)/
+                        /^<(h[2-4]|ul|ol|li|blockquote|pre|code|hr|div)|^HEADING[45]_BOLD_PLACEHOLDER/
                      )
                   ) {
                      return paragraph;
@@ -532,6 +543,16 @@
             html = html.replace(/(<h[2-4]>.*?<\/h[2-4]>)<p><\/p>/g, "$1");
             html = html.replace(/(<\/(h2|h3|h4)>)(<br\s*\/?>)?/g, "$1");
 
+            // STEP 4: Platzhalter für ##### und #### zurückwandeln zu <p><strong>
+            html = html.replace(
+               /HEADING5_BOLD_PLACEHOLDER_(.*?)_ENDPLACEHOLDER/g,
+               "<p><strong>$1</strong></p>"
+            );
+            html = html.replace(
+               /HEADING4_BOLD_PLACEHOLDER_(.*?)_ENDPLACEHOLDER/g,
+               "<p><strong>$1</strong></p>"
+            );
+
             // Platzhalter zurückwandeln
             html = html.replace(/AAAAAAAAAAAAAAAAAAAAAA/g, " ");
             html = html.replace(/HASH_PLACEHOLDER/g, "#");
@@ -543,16 +564,51 @@
          const markdownInput = document.getElementById("markdown-input");
          const preview = document.getElementById("preview");
          const copyBtn = document.getElementById("copy-btn");
-         const headerCopyBtn = document.getElementById("header-copy-btn");
+
+         let hasScrolledOnce = false;
 
          function updatePreview() {
             const markdown = markdownInput.value;
-            sessionStorage.setItem("markdownInput", markdown);
             const html = markdownToMediumHTML(markdown);
             preview.innerHTML = html || "<em>Preview will appear here...</em>";
          }
 
-         markdownInput.addEventListener("input", updatePreview);
+         function handleInput() {
+            updatePreview();
+
+            // Scroll to copy button on first input
+            if (!hasScrolledOnce && markdownInput.value.trim().length > 0) {
+               hasScrolledOnce = true;
+
+               // Custom slow scroll animation
+               const targetPosition = copyBtn.getBoundingClientRect().top + window.pageYOffset - window.innerHeight / 2 + copyBtn.offsetHeight / 2;
+               const startPosition = window.pageYOffset;
+               const distance = targetPosition - startPosition;
+               const duration = 2000; // 2 seconds for slow scroll
+               let start = null;
+
+               function slowScroll(timestamp) {
+                  if (!start) start = timestamp;
+                  const elapsed = timestamp - start;
+                  const progress = Math.min(elapsed / duration, 1);
+
+                  // Ease-in-out function for smooth acceleration/deceleration
+                  const easeInOutCubic = progress < 0.5
+                     ? 4 * progress * progress * progress
+                     : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+                  window.scrollTo(0, startPosition + distance * easeInOutCubic);
+
+                  if (progress < 1) {
+                     requestAnimationFrame(slowScroll);
+                  }
+               }
+
+               requestAnimationFrame(slowScroll);
+            }
+         }
+
+         markdownInput.addEventListener("input", handleInput);
 
          async function handleCopy() {
             const htmlElement = document.getElementById("preview");
@@ -610,13 +666,8 @@
          }
 
          copyBtn.addEventListener("click", handleCopy);
-         headerCopyBtn.addEventListener("click", handleCopy);
 
-         const savedMarkdown = sessionStorage.getItem("markdownInput");
-         if (savedMarkdown !== null) {
-            markdownInput.value = savedMarkdown;
-         } else {
-            markdownInput.value = `# Example Heading
+         markdownInput.value = `# Example Heading
 
 This is **bold text** and *italic text*.
 
@@ -626,6 +677,14 @@ This is **bold text** and *italic text*.
 - Point 2
 
 > Quote
+
+#### Test h4 Heading (should be BOLD)
+
+This should be a regular paragraph after h4.
+
+##### Test h5 Heading (should also be BOLD)
+
+Another paragraph after h5.
 
 \`\`\`yaml
 version: "3.5"
@@ -653,7 +712,6 @@ services:
 1. Numbered
 2. Also this
 `;
-         }
 
          updatePreview();
       </script>
