@@ -1,0 +1,12 @@
+# Alte Dateien und Entwicklungsversionen
+alte-dateien/
+
+# Claude temporäre Dateien
+.claude/
+claude-home/
+
+# Git
+.git/
+
+# Editor-Konfiguration
+.vscode/
