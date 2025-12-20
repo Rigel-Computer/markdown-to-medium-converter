@@ -74,7 +74,7 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 **📝 Standard Markdown Support:**
 
--  Headings (`#`, `##`, `###`)
+-  Headings (`#`, `##`, `###`) and extended headings (`####`, `#####` as bold text)
 -  Bold, italic, and inline code
 -  Lists (ordered and unordered)
 -  Blockquotes and links
@@ -90,8 +90,9 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 **⚡ User Experience:**
 
 -  Live preview as you type
--  One-click copy to clipboard (Chrome/Edge)
--  Manual copy instructions for other browsers
+-  Cross-platform one-click copy to clipboard (modern browsers)
+-  Smooth scroll guide to copy button on first input
+-  HTML escaping for security
 -  Responsive design works on any screen size
 
 ---
@@ -135,11 +136,13 @@ This project offers a browser-based HTML tool to convert standard Markdown into 
 
 **For Everyone:**
 
-1. Download and open `index.html` in your browser, or [use the latest version directly from this git repository](https://htmlpreview.github.io/?https://github.com/Rigel-Computer/markdown-to-medium-converter/blob/main/index.html)
+1. **Direct Use:**
+   -  Download `index.html` from this repository and open it in your browser, or
+   -  [Use it directly via GitHub Pages](https://rigel-computer.github.io/markdown-to-medium-converter/)
 2. Enter or paste your Markdown on the left
 3. See the live HTML preview on the right
-4. Click the green button to copy the HTML (Chrome/Edge)
-   -  Firefox users: select text manually and press CTRL+C
+4. Click the copy button to copy the HTML to clipboard
+   -  Works in all modern browsers with automatic fallback
 5. Paste into Medium's editor
 
 **Pro Tips:**
